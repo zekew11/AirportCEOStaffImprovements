@@ -9,109 +9,111 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace AirportCEOStaffImprovements.TrainAllSystem;
-
-[HarmonyPatch]
-public static class TrainAllSystem
+namespace AirportCEOStaffImprovements.TrainAllSystem
 {
-    static Transform staffinteractionbar;
-    static Transform originalHappinessTransform;
-    static Transform newHappinessTransform;
-    static Button newHappinessButton;
-    static TextMeshProUGUI newHappinessText;
 
-    private static EmployeePanelUI panelUI;
-
-    [HarmonyPatch(typeof(EmployeePanelUI), "InitializePanel")]
-    [HarmonyPostfix]
-    public static void CreateButton(EmployeePanelUI __instance)
+    [HarmonyPatch]
+    public static class TrainAllSystem
     {
-        panelUI = __instance;
+        static Transform staffinteractionbar;
+        static Transform originalHappinessTransform;
+        static Transform newHappinessTransform;
+        static Button newHappinessButton;
+        static TextMeshProUGUI newHappinessText;
 
-        try
+        private static EmployeePanelUI panelUI;
+
+        [HarmonyPatch(typeof(EmployeePanelUI), "InitializePanel")]
+        [HarmonyPostfix]
+        public static void CreateButton(EmployeePanelUI __instance)
         {
-            staffinteractionbar = ManagementPanelController.Instance.interactionBarTransforms.Find("StaffInteractionBar");
-            originalHappinessTransform = staffinteractionbar.Find("Happiness");
+            panelUI = __instance;
 
-            newHappinessTransform = GameObject.Instantiate(originalHappinessTransform, staffinteractionbar);
-            newHappinessTransform.SetSiblingIndex(1);
-            newHappinessTransform.gameObject.SetActive(true);
-            newHappinessText = newHappinessTransform?.GetChild(0)?.GetComponent<TextMeshProUGUI>();
-
-            newHappinessText.text = "Train All Staff";
-
-            newHappinessButton = newHappinessTransform.gameObject.AddComponent<Button>();
-            ColorBlock colorBlock = new()
+            try
             {
-                normalColor = DataPlaceholderColors.Instance.lightBlue,
-                highlightedColor = DataPlaceholderColors.Instance.blue,
-                colorMultiplier = 1,
-                disabledColor = DataPlaceholderColors.Instance.gray,
-                pressedColor = DataPlaceholderColors.Instance.darkBlue,
-                selectedColor = DataPlaceholderColors.Instance.lightBlue,
-                fadeDuration = 0.1f,
-            };
-            newHappinessButton.colors = colorBlock;
-            newHappinessButton.onClick.AddListener(OnTrainAllClick);
+                staffinteractionbar = ManagementPanelController.Instance.interactionBarTransforms.Find("StaffInteractionBar");
+                originalHappinessTransform = staffinteractionbar.Find("Happiness");
 
-            Image image = newHappinessTransform.GetComponent<Image>();
-            image.enabled = true;
-            image.color = Color.white;
+                newHappinessTransform = GameObject.Instantiate(originalHappinessTransform, staffinteractionbar);
+                newHappinessTransform.SetSiblingIndex(1);
+                newHappinessTransform.gameObject.SetActive(true);
+                newHappinessText = newHappinessTransform?.GetChild(0)?.GetComponent<TextMeshProUGUI>();
 
-            newHappinessButton.enabled = true;
+                newHappinessText.text = "Train All Staff";
 
-            AirportCEOStaffImprovements.SILogger.LogInfo("Completed button creation?");
-        }
-        catch (Exception ex)
-        {
-            AirportCEOStaffImprovements.SILogger.LogError($"Failed to create new icon. {ExceptionUtils.ProccessException(ex)}");
-        }
-    }
+                newHappinessButton = newHappinessTransform.gameObject.AddComponent<Button>();
+                ColorBlock colorBlock = new()
+                {
+                    normalColor = DataPlaceholderColors.Instance.lightBlue,
+                    highlightedColor = DataPlaceholderColors.Instance.blue,
+                    colorMultiplier = 1,
+                    disabledColor = DataPlaceholderColors.Instance.gray,
+                    pressedColor = DataPlaceholderColors.Instance.darkBlue,
+                    selectedColor = DataPlaceholderColors.Instance.lightBlue,
+                    fadeDuration = 0.1f,
+                };
+                newHappinessButton.colors = colorBlock;
+                newHappinessButton.onClick.AddListener(OnTrainAllClick);
 
-    public static void OnTrainAllClick()
-    {
-        if (!AirportController.Instance.HasHiredEmployeeType(Enums.EmployeeType.HRDirector))
-        {
-            DialogUtils.QueueDialog("An HR Director is required to mass train staff.");
-            return;
-        }
+                Image image = newHappinessTransform.GetComponent<Image>();
+                image.enabled = true;
+                image.color = Color.white;
 
-        float estimatedCost = 0;
-        foreach (EmployeeController employee in AirportController.Instance.allEmployees)
-        {
-            if (!employee.CanTrain)
+                newHappinessButton.enabled = true;
+
+                AirportCEOStaffImprovements.SILogger.LogInfo("Completed button creation?");
+            }
+            catch (Exception ex)
             {
-                continue;
+                AirportCEOStaffImprovements.SILogger.LogError($"Failed to create new icon. {ExceptionUtils.ProccessException(ex)}");
+            }
+        }
+
+        public static void OnTrainAllClick()
+        {
+            if (!AirportController.Instance.HasHiredEmployeeType(Enums.EmployeeType.HRDirector))
+            {
+                DialogUtils.QueueDialog("An HR Director is required to mass train staff.");
+                return;
             }
 
-            estimatedCost += employee.TrainingPrice;
-        }
-
-        if (estimatedCost == 0)
-        {
-            DialogUtils.QueueDialog("All staff are fully trained!");
-            return;
-        }
-
-        DialogPanel.Instance.ShowQuestionPanel(TrainAllStaffOnce, $"Train all staff (that can be trained) once? Estimated cost: {Utils.GetCurrencyFormat(estimatedCost)}", true, false);
-    }
-
-    public static void TrainAllStaffOnce(bool questionResult)
-    {
-        if (!questionResult)
-        {
-            return;
-        }
-
-        foreach (EmployeeController employee in AirportController.Instance.allEmployees)
-        {
-            if (!employee.CanTrain)
+            float estimatedCost = 0;
+            foreach (EmployeeController employee in AirportController.Instance.allEmployees)
             {
-                continue;
+                if (!employee.CanTrain)
+                {
+                    continue;
+                }
+
+                estimatedCost += employee.TrainingPrice;
             }
 
-            employee.TrainEmployee();
+            if (estimatedCost == 0)
+            {
+                DialogUtils.QueueDialog("All staff are fully trained!");
+                return;
+            }
+
+            DialogPanel.Instance.ShowQuestionPanel(TrainAllStaffOnce, $"Train all staff (that can be trained) once? Estimated cost: {Utils.GetCurrencyFormat(estimatedCost)}", true, false);
         }
-        panelUI.GenerateEmployeeContainers();
+
+        public static void TrainAllStaffOnce(bool questionResult)
+        {
+            if (!questionResult)
+            {
+                return;
+            }
+
+            foreach (EmployeeController employee in AirportController.Instance.allEmployees)
+            {
+                if (!employee.CanTrain)
+                {
+                    continue;
+                }
+
+                employee.TrainEmployee();
+            }
+            panelUI.GenerateEmployeeContainers();
+        }
     }
 }

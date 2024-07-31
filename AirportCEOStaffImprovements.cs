@@ -3,31 +3,33 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 
-namespace AirportCEOStaffImprovements;
-
-[BepInPlugin("org.airportceostaffimprovements.humoresque", "AirportCEO Staff Improvements", PluginInfo.PLUGIN_VERSION)]
-[BepInDependency("org.airportceomodloader.humoresque")]
-public class AirportCEOStaffImprovements : BaseUnityPlugin
+namespace AirportCEOStaffImprovements
 {
-    public static AirportCEOStaffImprovements Instance { get; private set; }
-    internal static Harmony Harmony { get; private set; }
-    internal static ManualLogSource SILogger { get; private set; }
-    internal static ConfigFile ConfigReference {  get; private set; }
 
-    private void Awake()
+    [BepInPlugin("org.airportceostaffimprovements.humoresque", "AirportCEO Staff Improvements", PluginInfo.PLUGIN_VERSION)]
+    [BepInDependency("org.airportceomodloader.humoresque")]
+    public class AirportCEOStaffImprovements : BaseUnityPlugin
     {
-        Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
-        Harmony = new Harmony(PluginInfo.PLUGIN_GUID);
-        Harmony.PatchAll(); 
+        public static AirportCEOStaffImprovements Instance { get; private set; }
+        internal static Harmony Harmony { get; private set; }
+        internal static ManualLogSource SILogger { get; private set; }
+        internal static ConfigFile ConfigReference { get; private set; }
 
-        Instance = this;
-        SILogger = Logger;
-        ConfigReference = Config;
+        private void Awake()
+        {
+            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            Harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+            Harmony.PatchAll();
 
-        // Config
-        Logger.LogInfo($"{PluginInfo.PLUGIN_GUID} is setting up config.");
-        SIConfig.SetUpConfig();
-        Logger.LogInfo($"{PluginInfo.PLUGIN_GUID} finished setting up config.");
+            Instance = this;
+            SILogger = Logger;
+            ConfigReference = Config;
 
+            // Config
+            Logger.LogInfo($"{PluginInfo.PLUGIN_GUID} is setting up config.");
+            SIConfig.SetUpConfig();
+            Logger.LogInfo($"{PluginInfo.PLUGIN_GUID} finished setting up config.");
+
+        }
     }
 }

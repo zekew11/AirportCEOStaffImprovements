@@ -5,14 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AirportCEOStaffImprovements;
-
-internal class SIConfig
+namespace AirportCEOStaffImprovements
 {
-    internal static ConfigEntry<bool> UseTrainAllButton { get; private set; }
 
-    internal static void SetUpConfig()
+    internal class SIConfig
     {
-        UseTrainAllButton = AirportCEOStaffImprovements.ConfigReference.Bind("General", "Create Train All Button", true, "Create a button to train all staff with.");
+        internal static ConfigEntry<bool> UseTrainAllButton { get; private set; }
+
+        internal static void SetUpConfig()
+        {
+            UseTrainAllButton = AirportCEOStaffImprovements.ConfigReference.Bind("General", "Create Train All Button", true, "Create a button to train all staff with.");
+        }
     }
 }
